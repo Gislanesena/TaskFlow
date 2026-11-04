@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: taskflow-sqlserver
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: 'TaskFlow@123'
+      MSSQL_PID: 'Developer'
+    ports:
+      - '1433:1433'
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+  api:
+    build:
+      context: ./TaskFlow.API
+      dockerfile: Dockerfile
+    container_name: taskflow-api
+    depends_on:
+      - sqlserver
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: 'Server=sqlserver;Database=TaskFlowDb;User Id=sa;Password=TaskFlow@123;TrustServerCertificate=True;'
+    ports:
+      - '5000:8080'
+
+volumes:
+  sqlserver_data:
